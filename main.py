@@ -1,83 +1,64 @@
-from Player import *
-from vodka import *
+import pygame
+from Player import Player
+from vodka import Vodka
 from random import randint
 
 pygame.init()
 pygame.time.set_timer(pygame.USEREVENT, 400)
 
-def Pos(pos, xy):
-    pos_x, pos_y = "", ""
-    bool_x, bool_y = False, False
-
-    for i in range(len(pos)):
-        if pos[i] == "(" and xy == "x":
-            bool_x = True
-        elif bool_x == True and pos[i] != "," and xy == "x":
-            pos_x += pos[i]
-        elif pos[i] == "," and xy == "x":
-            bool_x = False
-        elif pos[i] == " " and xy == "y":
-            bool_y = True
-        elif bool_y == True and pos[i] != ")" and xy == "y":
-            pos_y += pos[i]
-        elif pos[i] == ")" and xy == "y":
-            bool_y = False
-
-    if xy == "x":
-        return int(pos_x)
-    elif xy == "y":
-        return int(pos_y)
+def parse_position(pos, axis):
+    """Parses position from a string representation."""
+    if axis == "x":
+        return int(pos.split(",")[0][1:])
+    elif axis == "y":
+        return int(pos.split(",")[1][:-1])
+    else:
+        raise ValueError("Axis must be 'x' or 'y'")
 
 width, height = 1200, 710
 screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
-fon = pygame.image.load('screen_screen.png')
+background = pygame.image.load('screen_screen.png')
 
-p = Player()
-vodka = [Vodka(i + 1) for i in range(4)]
-fal = randint(0, 3)
+player = Player()
+vodkas = [Vodka(i + 1) for i in range(4)]
+current_active_vodka = randint(0, 3)
 
-while True:
-    screen.blit(fon, (0, 0))
+running = True
+while running:
+    screen.blit(background, (0, 0))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            exit()
+            running = False
 
         if event.type == pygame.USEREVENT:
-            for i in range(4):
-                if fal == i:
-                    vodka[i].t = True
+            vodkas[current_active_vodka].t = True
 
-    pos_x, pos_y = Pos(str(pygame.mouse.get_pos()), "x"), Pos(str(pygame.mouse.get_pos()), "y")
+    mouse_x, mouse_y = pygame.mouse.get_pos()
 
-    if pos_x < 500:
-        p.left = True
-    else:
-        p.left = False
+    player.left = mouse_x < 500
+    player.up = mouse_y < 250
 
-    if pos_y < 250:
-        p.up = True
-    else:
-        p.up = False
+    player.update()
 
-    p.update()
+    for i, vodka in enumerate(vodkas):
+        if i == current_active_vodka:
+            if vodka.next == 5:  # Если Vodka закончила появляться
+                current_active_vodka = randint(0, 3)
+                vodka.next = 0
+            vodka.update()
 
-    for i in range(4):
-        if fal == i:
-            if vodka[i].next == 5:
-                fal = randint(0, 3)
-                vodka[i].next = 0
+    screen.blit(player.image, player.rect)
 
-            vodka[i].update()
-
-    screen.blit(p.image, p.rect)
-
-    for i in range(5):
-        for j in range(4):
-            if vodka[j].vid[i] and fal == j:
-                screen.blit(vodka[j].image[i], vodka[j].rect[i])
+    for i, vodka in enumerate(vodkas):
+        if i == current_active_vodka:  # Рисуем только активную Vodka
+            for idx, visible in enumerate(vodka.vid):
+                if visible:
+                    screen.blit(vodka.image[idx], vodka.rect[idx])
 
     pygame.display.flip()
     clock.tick(60)
+
+pygame.quit()

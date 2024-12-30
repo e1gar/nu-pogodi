@@ -1,46 +1,44 @@
 import pygame
 
 class Vodka(pygame.sprite.Sprite):
-    def __init__(self, nom):
-        pygame.sprite.Sprite.__init__(self)
-
+    def __init__(self, index):
+        super().__init__()
         self.file = "vodka10.png"
-
-        self.x = [0 for i in range(5)]
-        self.y = [0 for i in range(5)]
-
-        self.vid = [False for i in range(5)]
-        self.t, self.next = False, 0
+        self.t = False
+        self.next = 0
+        self.vid = [False] * 5
         self.vid[0] = True
+        self.x = [0] * 5
+        self.y = [0] * 5
 
+        # Define positions
         for i in range(5):
-            if nom == 1:
-                self.x[i] = 341 + 10 + i *25
-                self.y[i] = 281 - 10 + i * 13
-            elif nom == 2:
-                self.x[i] = 341 + 10 + i *25
-                self.y[i] = 371 - 10 + i * 13
-            elif nom == 3:
-                self.x[i] = 811 - (10 + i *25)
-                self.y[i] = 285 - 10 + i * 13
-            elif nom == 4:
-                self.x[i] = 811 - (10 + i *25)
-                self.y[i] = 375 - 10 + i * 13
+            offset = 25 * i
+            slope = 13 * i
+            if index == 1:
+                self.x[i] = 351 + offset
+                self.y[i] = 271 + slope
+            elif index == 2:
+                self.x[i] = 351 + offset
+                self.y[i] = 361 + slope
+            elif index == 3:
+                self.x[i] = 811 - offset
+                self.y[i] = 275 + slope
+            elif index == 4:
+                self.x[i] = 811 - offset
+                self.y[i] = 365 + slope
 
-        self.image = [pygame.image.load(self.file).convert_alpha() for i in range(5)]
-        if nom < 3:
-            self.image = [pygame.transform.rotate(self.image[i], -30 * i) for i in range(5)]
-        else:
-            self.image = [pygame.transform.rotate(self.image[i], 30 * i) for i in range(5)]
+        # Load and rotate images
+        self.image = [pygame.image.load(self.file).convert_alpha() for _ in range(5)]
+        angle = -30 if index < 3 else 30
+        self.image = [pygame.transform.rotate(self.image[i], angle * i) for i in range(5)]
 
         self.rect = [self.image[i].get_rect(center=(self.x[i], self.y[i])) for i in range(5)]
 
     def update(self):
-        if self.t == True:
+        if self.t:
             self.vid[self.next] = False
             self.next += 1
             if self.next < 5:
                 self.vid[self.next] = True
-
             self.t = False
-
