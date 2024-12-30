@@ -1,10 +1,9 @@
-import pygame
 from Player import *
 from vodka import *
 from random import randint
 
 pygame.init()
-pygame.time.set_timer(pygame.USEREVENT, 1200)
+pygame.time.set_timer(pygame.USEREVENT, 400)
 
 def Pos(pos, xy):
     pos_x, pos_y = "", ""
